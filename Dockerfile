@@ -10,4 +10,4 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy the rest of the application to the container
-COPY backend /app
+COPY app /app

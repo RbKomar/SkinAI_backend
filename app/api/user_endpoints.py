@@ -7,14 +7,14 @@ from fastapi import APIRouter
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
-from backend.api.auth import SECRET_KEY, ALGORITHM
-from backend.api.auth import generate_token
-from backend.api.security import get_password_hash
-from backend.api.security import verify_password
-from backend.database.db_manager import get_user_by_username
-from backend.database.db_manager import insert_user, get_all_users, update_user_in_db, \
+from app.api.auth import SECRET_KEY, ALGORITHM
+from app.api.auth import generate_token
+from app.api.security import get_password_hash
+from app.api.security import verify_password
+from app.database.db_manager import get_user_by_username
+from app.database.db_manager import insert_user, get_all_users, update_user_in_db, \
     delete_user_from_db
-from backend.models.user import User
+from app.models.user import User
 from models.token import Token
 
 router = APIRouter()

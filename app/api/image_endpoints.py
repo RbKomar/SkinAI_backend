@@ -5,10 +5,10 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 from starlette.requests import Request
 
-from backend.api.auth import get_current_user
-from backend.database.db_manager import insert_image, save_image_to_disk
-from backend.models.image import ImageUpload
-from backend.models.user import User
+from app.api.auth import get_current_user
+from app.database.db_manager import insert_image, save_image_to_disk
+from app.models.image import ImageUpload
+from app.models.user import User
 
 router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
