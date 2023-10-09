@@ -2,10 +2,10 @@ import os
 import sqlite3
 from typing import Optional
 
-from models.user import User
+from app.config import DATABASE
+from app.models.user import User
 
-DATABASE = 'database_SkinAI.db'
-IMAGE_STORAGE_PATH = "images/"
+IMAGE_STORAGE_PATH = os.path.join(os.path.dirname(__file__), 'database', 'image_storage')
 
 
 # ------------------ User related functions ------------------
@@ -90,6 +90,16 @@ def delete_user_from_db(username):
         print(f"Error deleting user {username}: {e}")
     finally:
         conn.close()
+
+
+def clear_users():
+    connection = sqlite3.connect(DATABASE)
+    cursor = connection.cursor()
+
+    cursor.execute("DELETE FROM users")
+
+    connection.commit()
+    connection.close()
 
 
 # ------------------ Image related functions ------------------

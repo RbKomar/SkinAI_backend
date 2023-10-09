@@ -1,8 +1,21 @@
 import sqlite3
+from faker import Faker
+
+from app.config import DATABASE
 
 
-def initialize_db():
-    with sqlite3.connect('../../database_SkinAI.db') as conn:
+def generate_mock_users(cursor, num_users=10):
+    fake = Faker()
+
+    for _ in range(num_users):
+        username = fake.user_name()
+        email = fake.email()
+        password = fake.password(length=12)  # Adjust length as needed
+        cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", (username, email, password))
+
+
+def initialize_db(mock_users_count=None):
+    with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
 
         c.execute('''
@@ -23,8 +36,14 @@ def initialize_db():
             FOREIGN KEY(user_id) REFERENCES users(id)
         )''')
 
+        if mock_users_count:
+            generate_mock_users(c, mock_users_count)
+
+        conn.commit()
+
         print("Database initialized successfully.")
 
 
 if __name__ == "__main__":
-    initialize_db()
+    # For example, to initialize the database with 20 mock users:
+    initialize_db(mock_users_count=20)
