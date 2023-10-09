@@ -14,14 +14,14 @@ router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
 
 
-def mock_malignancy_prediction(image_data: bytes) -> int:
+def mock_malignancy_prediction() -> int:
     return random.randint(0, 100)
 
 
 @router.post("/image/")
 async def process_image(request: Request, image: ImageUpload, current_user: User = Depends(get_current_user)):
     # Logic for image processing
-    malignancy_percentage = mock_malignancy_prediction(b"dummy_data")  # Passing dummy data for now
+    malignancy_percentage = mock_malignancy_prediction()  # Passing dummy data for now
     return {"description": image.description, "malignancy_percentage": malignancy_percentage}
 
 
@@ -36,8 +36,8 @@ async def upload_image_endpoint(request: Request, image: ImageUpload, current_us
         insert_image({
             "image_path": image_path,
             "description": image.description,
-            "malignancy_percentage": mock_malignancy_prediction(image_data)
+            "malignancy_percentage": mock_malignancy_prediction()
         }, current_user.id)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error saving image data.") from e
-    return {"description": image.description, "malignancy_percentage": mock_malignancy_prediction(image_data)}
+    return {"description": image.description, "malignancy_percentage": mock_malignancy_prediction()}

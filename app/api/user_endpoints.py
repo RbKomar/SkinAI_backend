@@ -1,21 +1,18 @@
 import sqlite3
-from datetime import datetime, timedelta
 from typing import List
 
-import jwt
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.auth import SECRET_KEY, ALGORITHM
 from app.api.auth import generate_token
 from app.api.security import get_password_hash
 from app.api.security import verify_password
 from app.database.db_manager import get_user_by_username
 from app.database.db_manager import insert_user, get_all_users, update_user_in_db, \
     delete_user_from_db
+from app.models.token import Token
 from app.models.user import User
-from models.token import Token
 
 router = APIRouter()
 
@@ -33,8 +30,13 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     return {"access_token": token, "token_type": "bearer"}
 
 
-@router.post("/user/")
-def create_user(user: User):
+@router.post("/register")
+def register_user(user: User):
+    return _create_user(user)
+
+
+@router.post("/user")
+def _create_user(user: User):
     hashed_password = get_password_hash(user.password)
     user_to_insert = User(username=user.username, email=user.email, password=hashed_password)
     try:
@@ -43,19 +45,11 @@ def create_user(user: User):
         raise HTTPException(
             status_code=400, detail="Username or email already registered"
         ) from e
-    # Generate token after successful registration
-    token_data = {"sub": user.username, "exp": datetime.utcnow() + timedelta(days=1)}
-    token = jwt.encode(token_data, SECRET_KEY, algorithm=ALGORITHM)
     return {"username": user.username, "email": user.email}
 
 
-@router.post("/register/")
-def register_user(user: User):
-    return create_user(user)
-
-
 # Read single user by username
-@router.get("/user/{username}/", response_model=User)
+@router.get("/user/{username}", response_model=User)
 def read_user(username: str):
     user = get_user_by_username(username)
     if user is None:
@@ -63,12 +57,12 @@ def read_user(username: str):
     return user
 
 
-@router.get("/users/", response_model=List[User])
+@router.get("/users", response_model=List[User])
 def read_users():
     return get_all_users()
 
 
-@router.put("/user/{username}/")
+@router.put("/user/{username}")
 def update_user(username: str, updated_user: User):
     user_in_db = get_user_by_username(username)
     if user_in_db is None:
@@ -80,7 +74,7 @@ def update_user(username: str, updated_user: User):
     return {"message": "User updated successfully"}
 
 
-@router.delete("/user/{username}/")
+@router.delete("/user/{username}")
 def delete_user(username: str):
     user_in_db = get_user_by_username(username)
     if user_in_db is None:

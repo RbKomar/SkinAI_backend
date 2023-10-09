@@ -1,7 +1,7 @@
 import os
 import time
 
-IMAGE_STORAGE_PATH = "database/images"
+IMAGE_STORAGE_PATH = "database/image_storage"
 CLEANUP_INTERVAL = 86400  # 24 hours in seconds
 MAX_IMAGE_AGE = 604800  # 7 days in seconds
 

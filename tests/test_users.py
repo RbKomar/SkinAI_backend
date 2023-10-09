@@ -1,23 +1,54 @@
-from fastapi.testclient import TestClient
+import pytest
+from starlette.testclient import TestClient
 
+from app.database.db_manager import clear_users
 from app.main import app
 
 client = TestClient(app)
 
 
-def test_create_user():
-    # clear DB
-    client.delete("/user/testuser/")
-    response = client.post("/user/", json={"username": "testuser", "email": "test@test.com", "password": "password"})
+@pytest.fixture(autouse=True, scope="module")
+def cleanup():
+    # Setup code can be added here if necessary
+    yield  # This line makes sure the tests run before the cleanup code
+    clear_users()  # Cleanup code to run after all tests
+
+
+@pytest.mark.parametrize(
+    "username, email, password",
+    [
+        ("john_doe", "john_doe@example.com", "password123"),
+        ("jane_smith", "jane_smith@example.com", "password456"),
+    ],
+    ids=["valid_username_email_password_1", "valid_username_email_password_2"]
+)
+def test_register_user_with_valid_data(username, email, password):
+    # Arrange
+    user = {"username": username, "email": email, "password": password}
+
+    # Act
+    response = client.post("/register", json=user)
+
+    # Assert
     assert response.status_code == 200
-    assert response.json()["username"] == "testuser"
-    assert response.json()["email"] == "test@test.com"
-    # We no longer expect the token in the response of the create user endpoint
-    assert "token" not in response.json()
+    assert response.json()["username"] == username
+    assert response.json()["email"] == email
 
 
-def test_login_user():
-    response = client.post("/login", data={"username": "testuser", "password": "password"})
+@pytest.mark.parametrize(
+    "username, password",
+    [
+        ("john_doe", "password123"),  # Test with valid username and password
+        ("jane_smith", "password456"),  # Test with valid username and password
+    ],
+    ids=["valid_username_password_1", "valid_username_password_2"]
+)
+def test_login_with_valid_credentials(username, password):
+    # Arrange
+    # Act
+    response = client.post("/login", data={"username": username, "password": password})
+
+    # Assert
     assert response.status_code == 200
     assert "access_token" in response.json()
     assert response.json()["token_type"] == "bearer"

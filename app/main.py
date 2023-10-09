@@ -1,4 +1,5 @@
 import logging
+import os
 
 from fastapi import FastAPI
 from fastapi import HTTPException
@@ -9,7 +10,7 @@ from slowapi.util import get_remote_address
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse
 
-from api import user_endpoints, image_endpoints
+from app.api import user_endpoints, image_endpoints
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -49,3 +50,4 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+

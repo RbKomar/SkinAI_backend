@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from starlette import status
 
 from app.database.db_manager import get_user_by_username
-from models.token import TokenData
+from app.models.token import TokenData
 
 SECRET_KEY = "your_secret_key"  # This should be securely stored and not hardcoded
 ALGORITHM = "HS256"
