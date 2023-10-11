@@ -1,8 +1,8 @@
 import logging
-import os
 
 from fastapi import FastAPI
 from fastapi import HTTPException
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter
 from slowapi.errors import RateLimitExceeded
@@ -16,6 +16,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    errors = [{k: v for k, v in err.items() if k != "input"} for err in exc.errors()]
+    return JSONResponse(status_code=400, content={"detail": errors})
 
 
 @app.exception_handler(RateLimitExceeded)
@@ -50,4 +56,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-

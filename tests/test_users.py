@@ -9,9 +9,8 @@ client = TestClient(app)
 
 @pytest.fixture(autouse=True, scope="module")
 def cleanup():
-    # Setup code can be added here if necessary
     yield  # This line makes sure the tests run before the cleanup code
-    clear_users()  # Cleanup code to run after all tests
+    clear_users(['john_doe', 'jane_smith'])
 
 
 @pytest.mark.parametrize(
@@ -44,7 +43,6 @@ def test_register_user_with_valid_data(username, email, password):
     ids=["valid_username_password_1", "valid_username_password_2"]
 )
 def test_login_with_valid_credentials(username, password):
-    # Arrange
     # Act
     response = client.post("/login", data={"username": username, "password": password})
 

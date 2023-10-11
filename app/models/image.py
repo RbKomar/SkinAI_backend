@@ -3,5 +3,5 @@ from pydantic import BaseModel
 
 
 class ImageUpload(BaseModel):
-    image_file: UploadFile
     description: str
+    image_file: UploadFile

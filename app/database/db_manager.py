@@ -5,7 +5,7 @@ from typing import Optional
 from app.config import DATABASE
 from app.models.user import User
 
-IMAGE_STORAGE_PATH = os.path.join(os.path.dirname(__file__), 'database', 'image_storage')
+IMAGE_STORAGE_PATH = os.path.join(os.path.dirname(__file__), "image_storage")
 
 
 # ------------------ User related functions ------------------
@@ -17,14 +17,18 @@ def get_db_connection():
 
 def insert_user(user):
     conn = get_db_connection()
-    tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users';").fetchall()
-    print(f"Tables: {tables}")
+    tables = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='users';"
+    ).fetchall()
     cursor = conn.cursor()
 
-    cursor.execute('''
+    cursor.execute(
+        """
     INSERT INTO users (username, email, password)
     VALUES (?, ?, ?)
-    ''', (user.username, user.email, user.password))
+    """,
+        (user.username, user.email, user.password),
+    )
 
     conn.commit()
     conn.close()
@@ -34,11 +38,10 @@ def get_user_by_username(username: str) -> Optional[User]:
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('SELECT * FROM users WHERE username = ?', (username,))
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     user_row = cursor.fetchone()
 
     conn.close()
-
     if user_row:
         return User(
             id=user_row[0],
@@ -70,7 +73,7 @@ def update_user_in_db(updated_user):
     try:
         cursor.execute(
             "UPDATE users SET email = ?, password = ? WHERE username = ?",
-            (updated_user.email, updated_user.password, updated_user.username)
+            (updated_user.email, updated_user.password, updated_user.username),
         )
         conn.commit()
     except sqlite3.Error as e:
@@ -92,20 +95,23 @@ def delete_user_from_db(username):
         conn.close()
 
 
-def clear_users():
-    connection = sqlite3.connect(DATABASE)
-    cursor = connection.cursor()
+def clear_users(usernames=None):
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
 
-    cursor.execute("DELETE FROM users")
+        if usernames:
+            for username in usernames:
+                c.execute("DELETE FROM users WHERE username = ?", (username,))
+        else:
+            c.execute("DELETE FROM users")
 
-    connection.commit()
-    connection.close()
+        conn.commit()
 
 
 # ------------------ Image related functions ------------------
 def save_image_to_disk(image_data, filename):
     file_path = os.path.join(IMAGE_STORAGE_PATH, filename)
-    with open(file_path, "wb") as f:
+    with open(file_path, "wb+") as f:
         f.write(image_data)
     return file_path
 
@@ -114,10 +120,34 @@ def insert_image(image_data: dict, user_id: int) -> None:
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute('''
+    cursor.execute(
+        """
     INSERT INTO images (user_id, image_path, description, malignancy_percentage)
     VALUES (?, ?, ?, ?)
-    ''', (user_id, image_data['image_path'], image_data['description'], image_data['malignancy_percentage']))
+    """,
+        (
+            user_id,
+            image_data["image_path"],
+            image_data["description"],
+            image_data["malignancy_percentage"],
+        ),
+    )
 
     conn.commit()
     conn.close()
+
+
+def fetch_image_by_id(image_id: int):
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM images WHERE id = ?", (image_id,))
+        image_data = c.fetchone()
+    return image_data
+
+
+def fetch_images_by_user(user_id: int):
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute("SELECT * FROM images WHERE user_id = ?", (user_id,))
+        images_data = c.fetchall()
+    return images_data
